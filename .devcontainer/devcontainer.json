@@ -1,0 +1,112 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.163.1/containers/ubuntu
+{
+    "name": "Ubuntu",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        // Update 'VARIANT' to pick an Ubuntu version: focal, bionic
+        "args": {
+            "VARIANT": "focal"
+        },
+        // Target build stage in dockerfile
+        // If not specified, vscode takes the last available stage in dockerfile
+        "target": "default"
+    },
+    "runArgs": [
+        "--name",
+        "vscodeContainer_2-devcontainer-${localEnv:USER}-default",
+        // Connect TTY
+        "-it",
+        // Debugging c/c++ code
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        // shared memory
+        "--shm-size=2g",
+        // Networking
+        "--network=host",
+        // Mount your local keys
+        "-v",
+        "${localEnv:HOME}/.ssh:/home/vscode/.ssh",
+        //"-v",
+        //"${localEnv:HOME}/.gnupg:/home/vscode/.gnupg", Note: must not be mounted in VScode, piped via an agent from host!
+        // Kubernetes Config
+        "-v",
+        "${localEnv:HOME}/.kube:/home/vscode/.kube",
+        // Caches from host
+        "-v",
+        "${localEnv:HOME}/.cache/pip:/home/vscode/.cache/pip",
+        "-v",
+        "${localEnv:HOME}/.ccache:/home/vscode/.ccache",
+        "-v",
+        "${localEnv:HOME}/.conan/data:/home/vscode/.conan/data",
+        "-v",
+        "${localEnv:HOME}/.cache/pre-commit-vscode:/home/vscode/.cache/pre-commit",
+        "-v",
+        "${localEnv:HOME}/.azure:/home/vscode/.azure",
+        // Mount X socket to be able to run GTK applications from inside Docker
+        "-v",
+        "${localEnv:XAUTHORITY}:/home/vscode/.Xauthority",
+        "-v",
+        "/tmp/.X11-unix:/tmp/.X11-unix",
+        "-e",
+        "HOST_FOLDER=${localWorkspaceFolder}",
+        "-e",
+        "HOST_USER=${localEnv:USER}",
+        // Docker in Docker
+        "-v",
+        "/var/run/docker.sock:/var/run/docker.sock"
+    ],
+    // Define the where the workspace is actually located in the container
+    "workspaceFolder": "/workspaces/vscodeContainer_2",
+    "workspaceMount": "src=${localWorkspaceFolder},dst=${containerWorkspaceFolder},type=bind,consistency=cached",
+    // Set *default* container specific settings.json values on container create.
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    // Set environment variables in the container
+    "remoteEnv": {
+        "WORKSPACE_FOLDER": "${containerWorkspaceFolder}",
+        // This is required to run GTK applications from inside Docker
+        "DISPLAY": "${localEnv:DISPLAY}"
+    },
+    "mounts": [
+        // Bash history cache
+        "source=vscode-bashhistory-${localEnv:USER},target=/home/vscode/commandhistory,type=volume"
+    ],
+    // Add the IDs of extensions you want installed when the container is created.
+    "extensions": [
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-vscode.cpptools",
+        "njpwerner.autodocstring",
+        "notskm.clang-tidy",
+        "redhat.vscode-yaml",
+        "rlnt.keep-a-changelog",
+        "streetsidesoftware.code-spell-checker",
+        "trond-snekvik.simple-rst",
+        "visualstudioexptteam.vscodeintellicode",
+        "xaver.clang-format"
+    ],
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    // A command string or list of command arguments to run on the host machine before the
+    // container is created.
+    // (!) The command is run wherever the source code is located on the host. For
+    // Codespaces, this is in the cloud.
+    // Note that the array syntax will execute the command without a shell.
+    "initializeCommand": [
+        ".devcontainer/before_container_start.sh"
+    ],
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // "postCreateCommand": "uname -a",
+    // Use 'postStartCommand' to run commands after the container is started.
+    "postStartCommand": [
+        ".devcontainer/on_container_start.sh"
+    ],
+    // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "vscode"
+}
